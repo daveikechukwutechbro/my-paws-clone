@@ -13,7 +13,7 @@ export default function Home() {
   useEffect(() => {
     console.log("🔥 App started");
 
-    const tg = window.Telegram?.WebApp;
+    const tg = (window as any).Telegram?.WebApp;
     const user = tg?.initDataUnsafe?.user;
 
     if (!user) {

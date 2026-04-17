@@ -11,23 +11,62 @@ import { TabProvider } from '@/contexts/TabContext'
 export default function Home() {
 
   useEffect(() => {
-    console.log("🔥 App loaded - useEffect running");
+    console.log("🔥 App started");
 
-    async function testDB() {
+    const tg = window.Telegram?.WebApp;
+    const user = tg?.initDataUnsafe?.user;
+
+    if (!user) {
+      console.log("❌ No Telegram user found (open inside Telegram)");
+      return;
+    }
+
+    const userId = user.id.toString();
+    const username = user.username || "guest";
+
+    async function handleUser() {
       try {
-        const { data, error } = await supabase.from('users').select('*')
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', userId)
+          .single();
 
-        if (error) {
-          console.error("❌ Supabase ERROR:", error)
-        } else {
-          console.log("✅ Supabase DATA:", data)
+        // If real error (not "user not found")
+        if (error && error.code !== 'PGRST116') {
+          console.error("❌ Fetch error:", error);
+          return;
         }
+
+        if (!data) {
+          // 👉 NEW USER (SIGN UP)
+          const { error: insertError } = await supabase
+            .from('users')
+            .insert([
+              {
+                id: userId,
+                username: username,
+                balance: 0
+              }
+            ]);
+
+          if (insertError) {
+            console.error("❌ Insert error:", insertError);
+          } else {
+            console.log("✅ New user created");
+          }
+
+        } else {
+          // 👉 EXISTING USER (LOGIN)
+          console.log("✅ Welcome back:", data);
+        }
+
       } catch (err) {
-        console.error("🚨 Unexpected ERROR:", err)
+        console.error("🚨 Unexpected error:", err);
       }
     }
 
-    testDB()
+    handleUser();
   }, [])
 
   return (

@@ -16,8 +16,7 @@ type TelegramUser = {
 export default function Home() {
   const [message, setMessage] = useState('Checking login...')
   const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(null)
-  const [loginMethod, setLoginMethod] = useState<'telegram' | 'google' | null>(null)
-  const [loadingGoogle, setLoadingGoogle] = useState(false)
+  const [loginMethod, setLoginMethod] = useState<'telegram' | null>(null)
 
   useEffect(() => {
     console.log('🔥 App started')
@@ -81,31 +80,6 @@ export default function Home() {
     handleUser()
   }, [])
 
-  const handleGoogleLogin = async () => {
-    setLoadingGoogle(true)
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.href
-        }
-      })
-
-      if (error) {
-        console.error('❌ Google sign-in error:', error)
-        setMessage('Google login failed. Please try again.')
-      } else {
-        setLoginMethod('google')
-        setMessage('Redirecting for Google sign-in...')
-      }
-    } catch (err) {
-      console.error('🚨 Unexpected Google login error:', err)
-      setMessage('Unexpected error during Google login. Check the console.')
-    } finally {
-      setLoadingGoogle(false)
-    }
-  }
-
   return (
     <TabProvider>
       <main className="min-h-screen bg-black text-white">
@@ -121,15 +95,7 @@ export default function Home() {
           )}
 
           <div className="mt-4 flex flex-col items-center gap-3">
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              disabled={loadingGoogle}
-              className="rounded-full border border-slate-600 bg-slate-900 px-5 py-2 text-sm font-semibold text-white transition hover:border-slate-400 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loadingGoogle ? 'Redirecting to Google...' : 'Sign in with Google'}
-            </button>
-            <p className="text-xs text-slate-500">If Telegram login is not available, use Google login instead.</p>
+            <p className="text-xs text-slate-500">This app uses Telegram login via the Telegram Web App.</p>
           </div>
         </div>
 
